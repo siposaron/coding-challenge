@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { WorkerController } from './worker.controller';
 import { WorkerService } from './services/worker.service';
 import { HttpModule } from '@nestjs/common';
-import { HubspotService } from './services/hubspot.service';
+import { HubspotService } from './services/hubspot/hubspot.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ContactSchedulerService } from './services/contact.scheduler.service';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
   ],
   controllers: [WorkerController],
-  providers: [HubspotService, WorkerService],
+  providers: [HubspotService, ContactSchedulerService, WorkerService],
 })
 export class WorkerModule {}

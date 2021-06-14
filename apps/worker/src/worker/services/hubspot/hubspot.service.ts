@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { HubspotContact } from '../dto/hubspot/hubspot.contact.dto';
+import { HubspotContact } from '../../dto/hubspot/hubspot.contact.dto';
 
 const HUBSPOT_CONTACTS_SEARCH_URI =
   'https://api.hubapi.com/crm/v3/objects/contacts/search';

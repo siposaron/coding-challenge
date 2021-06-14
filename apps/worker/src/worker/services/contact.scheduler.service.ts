@@ -16,6 +16,7 @@ export class ContactSchedulerService {
   ) {}
 
   private readonly logger = new Logger(ContactSchedulerService.name);
+  private readonly contactsCronJob = 'CONTACTS_CRON_JOB';
 
   private fromDate: Date;
 
@@ -28,7 +29,7 @@ export class ContactSchedulerService {
    */
   startContactReaderJob(
     fromDate?: Date,
-    name = 'CONTACTS_CRON_JOB',
+    name = this.contactsCronJob,
     minutes = 5,
   ) {
     if (fromDate) {
@@ -55,7 +56,11 @@ export class ContactSchedulerService {
     }
   }
 
-  stopContactReaderJob(name = 'CONTACTS_CRON_JOB') {
+  /**
+   * Stops the contact reader job
+   * @param name the name of the job, defaults to `CONTACTS_CRON_JOB`
+   */
+  stopContactReaderJob(name = this.contactsCronJob) {
     const job = this.schedulerRegistry.getCronJob(name);
     if (job) {
       job.stop();
