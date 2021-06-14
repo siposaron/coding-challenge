@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WorkerController } from './worker.controller';
-import { WorkerService } from './worker.service';
+import { WorkerService } from './services/worker.service';
 
 describe('WorkerController', () => {
   let workerController: WorkerController;
@@ -16,7 +16,7 @@ describe('WorkerController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(workerController.getHello()).toBe('Hello World!');
+      expect(workerController.getHello()).toBeUndefined();
     });
   });
 });
