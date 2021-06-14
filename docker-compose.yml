@@ -51,7 +51,7 @@ services:
       context: .
       dockerfile: 'docker/Worker.Dockerfile'
     environment:
-      HUBSPOT_API_KEY: ca3db842-f938-48cb-b75e-fe8b2dd229ed
+      HUBSPOT_API_KEY: ${HUBSPOT_API_KEY}
     networks:
       - wchallenge
     labels:

@@ -19,4 +19,20 @@ export class ContactService {
     const count = await this.contactModel.countDocuments({}).exec();
     return { count } as ContactCountDto;
   }
+
+  /**
+   * Lists the contacts in the system.
+   * @param offset the offset to start from
+   * @param limit the max number of contacts to return
+   * @returns the limited list of contacts
+   */
+  async listContacts(offset = 0, limit = 10): Promise<Contact[]> {
+    const contactDocuments: ContactDocument[] = await this.contactModel
+      .find()
+      .limit(limit)
+      .skip(offset * limit)
+      .exec();
+
+    return contactDocuments.map((doc) => new Contact(doc));
+  }
 }

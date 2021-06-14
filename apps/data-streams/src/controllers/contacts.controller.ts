@@ -1,30 +1,29 @@
 import {
-  Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
-  Post,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { ContactCountDto } from '../dto/contact-count.dto';
-import { StartJobDto } from '../dto/start-job.dto';
-import { StopJobDto } from '../dto/stop-job.dto';
+import { Contact } from '../schemas/contact.schema';
 import { ContactService } from '../services/contact.service';
-import { DataStreamService } from '../services/data-stream.service';
 
 // TODO: future work: add authentication, JWT authorization, job CRUD + scheduler that sends start / stop jobs events to worker
-@Controller('/api/streams')
+@Controller('/api/contacts')
 @UseInterceptors(ClassSerializerInterceptor)
-export class DataStreamController {
-  constructor(private readonly dataStreamService: DataStreamService) {}
+export class ContactsController {
+  constructor(private readonly contactService: ContactService) {}
 
   @ApiOkResponse({
-    description: 'Starts the fetch job in worker.',
+    type: ContactCountDto,
+    description: 'Returns the number of existing contacts.',
   })
   @ApiBadRequestResponse({
     description: 'Bad request, validation failed. Check the input data',
@@ -32,16 +31,14 @@ export class DataStreamController {
   @ApiInternalServerErrorResponse({
     description: 'Internal service error. Check the logs for more info.',
   })
-  @Post('/start')
-  async startJob(
-    @Body()
-    startJobDto: StartJobDto,
-  ) {
-    return await this.dataStreamService.startJob(startJobDto);
+  @Get('/count')
+  async countContacts(): Promise<ContactCountDto> {
+    return await this.contactService.countContacts();
   }
 
   @ApiOkResponse({
-    description: 'Stops the fetch job in worker.',
+    type: ContactCountDto,
+    description: 'Returns the list of contacts.',
   })
   @ApiBadRequestResponse({
     description: 'Bad request, validation failed. Check the input data',
@@ -49,11 +46,23 @@ export class DataStreamController {
   @ApiInternalServerErrorResponse({
     description: 'Internal service error. Check the logs for more info.',
   })
-  @Post('/stop')
-  async stopJob(
-    @Body()
-    stopJobDto: StopJobDto,
-  ) {
-    return await this.dataStreamService.stopJob(stopJobDto);
+  @ApiQuery({
+    name: 'offset',
+    allowEmptyValue: true,
+    required: false,
+    example: 0,
+  })
+  @ApiQuery({
+    name: 'limit',
+    allowEmptyValue: true,
+    required: false,
+    example: 10,
+  })
+  @Get()
+  async listContacts(
+    @Query('offset') offset: number,
+    @Query('limit') limit: number,
+  ): Promise<Contact[]> {
+    return await this.contactService.listContacts(offset, limit);
   }
 }
