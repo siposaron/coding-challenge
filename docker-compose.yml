@@ -1,0 +1,82 @@
+# Commons, extensions
+x-common: &common
+  logging:
+    driver: 'json-file'
+    options:
+      max-size: 32m
+      max-file: 3
+  restart: 'unless-stopped'
+
+x-local-label: &local
+  local.id: 'wchallenge'
+
+version: '3.7'
+
+# Services
+services:
+  mongo:
+    <<: *common
+    image: 'mongo:latest'
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    networks:
+      - wchallenge-net
+    labels:
+      <<: *local
+
+  # data-streams:
+  #   <<: *common
+  #   build:
+  #     context: .
+  #     dockerfile: 'docker/DataStreamsDockerfile'
+  #   expose:
+  #     - '3000'
+  #   ports:
+  #     - '3000:3000'
+  #   environment:
+  #     MONGO_URI: mongodb://mongo:27017/wchallenge
+  #     # HUBSPOT_API_KEY: ${HUBSPOT_API_KEY} #ca3db842-f938-48cb-b75e-fe8b2dd229ed
+  #   depends_on:
+  #     - mongo
+  #   networks:
+  #     - wchallenge-net
+  #   labels:
+  #     <<: *local
+
+  # worker:
+  #   <<: *common
+  #   build:
+  #     context: .
+  #     dockerfile: 'docker/WorkerDockerfile'
+  #   expose:
+  #     - '3000'
+  #   ports:
+  #     - '3001:3000'
+  #   environment:
+  #     HUBSPOT_API_KEY: ca3db842-f938-48cb-b75e-fe8b2dd229ed
+  #   networks:
+  #     - wchallenge-net
+  #   labels:
+  #     <<: *local
+
+# TODO: add transport, i.e. NATS
+
+# Volumes
+volumes:
+  mongo-data:
+    driver: local
+    labels:
+      <<: *local
+  mongo-config:
+    driver: local
+    labels:
+      <<: *local
+
+# Network
+networks:
+  wchallenge-net:
+    labels:
+      <<: *local

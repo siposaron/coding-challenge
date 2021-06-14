@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WorkerController } from './worker.controller';
-import { WorkerService } from './services/worker.service';
-import { ContactSchedulerService } from './services/contact.scheduler.service';
-import { HubspotService } from './services/hubspot/hubspot.service';
+import { WorkerService } from '../services/worker.service';
+import { ContactSchedulerService } from '../services/contact.scheduler.service';
+import { HubspotService } from '../services/hubspot/hubspot.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 describe('WorkerController', () => {
   let workerController: WorkerController;
@@ -19,7 +20,12 @@ describe('WorkerController', () => {
         }),
       ],
       controllers: [WorkerController],
-      providers: [HubspotService, ContactSchedulerService, WorkerService],
+      providers: [
+        HubspotService,
+        ContactSchedulerService,
+        WorkerService,
+        ConfigService,
+      ],
     }).compile();
 
     workerController = app.get<WorkerController>(WorkerController);

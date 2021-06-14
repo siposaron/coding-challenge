@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HubspotContact } from '../../dto/hubspot/hubspot.contact.dto';
@@ -12,7 +13,10 @@ const HUBSPOT_CONTACTS_SEARCH_URI =
  */
 @Injectable()
 export class HubspotService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Retrieves the contacts from Hubspot
@@ -25,7 +29,7 @@ export class HubspotService {
       .post(
         HUBSPOT_CONTACTS_SEARCH_URI.concat(
           '?hapikey=',
-          process.env.HUBSPOT_API_KEY,
+          this.configService.get<string>('HUBSPOT_API_KEY'),
         ),
         this.getSearchPayload(fromDate),
       )

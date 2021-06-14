@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { WorkerModule } from './worker/worker.module';
+import { WorkerModule } from './worker.module';
 import { MicroserviceOptions } from '@nestjs/microservices';
 
 async function bootstrap() {
@@ -13,4 +13,5 @@ async function bootstrap() {
     console.log('Worker is listening');
   });
 }
+
 bootstrap();

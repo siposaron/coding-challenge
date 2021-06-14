@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
-import { HubspotContact } from '../dto/hubspot/hubspot.contact.dto';
 import { HubspotService } from './hubspot/hubspot.service';
 import { Contact } from '../dto/contact.dto';
+import { HubspotContact } from '../dto/hubspot/hubspot.contact.dto';
 
 /**
  * Scheduler responsible for starting and stopping jobs that fetch contacts from Hubspot.
