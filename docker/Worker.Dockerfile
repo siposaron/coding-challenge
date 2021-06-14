@@ -1,20 +1,15 @@
-# building the data-streams app
 FROM node:14-alpine AS build
 WORKDIR /usr/src
+
 COPY package.json .
 COPY package-lock.json .
 COPY tsconfig.build.json .
 COPY tsconfig.json .
 COPY nest-cli.json .
 COPY apps ./apps
+
 RUN npm install
 RUN npm run build worker
 
-# final image running the main.js file
-FROM node:14-alpine as release
-WORKDIR /usr/app
 ENV NODE_ENV production
-COPY --from=build /usr/src/dist/apps/worker .
-COPY --from=build /usr/src/node_modules .
-EXPOSE 3000
-CMD node main
+CMD npm run start worker
