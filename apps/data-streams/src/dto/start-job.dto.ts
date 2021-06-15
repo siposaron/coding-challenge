@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum } from 'class-validator';
+import { IsDate, IsEnum, IsOptional } from 'class-validator';
 import { DataSource } from '../commons/datasource.enum';
 import { ObjectType } from '../commons/object-type.enum';
 
@@ -10,6 +10,7 @@ export class StartJobDto {
   }
 
   @ApiPropertyOptional({ type: Date, example: '2021-07-07T10:00:00.000Z' })
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
   fromDate: Date;

@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientsModule } from '@nestjs/microservices';
 import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
+import { natsConfig } from './config/nats.config';
+import { ContactsController } from './controllers/contacts.controller';
 import { DataStreamController } from './controllers/data-stream.controller';
 import { ContactFeature } from './schemas/contact.schema';
 import { ContactService } from './services/contact.service';
@@ -22,6 +25,12 @@ const mongoConnectionOptions = {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ClientsModule.register([
+      {
+        name: 'WORKER_SERVICE',
+        ...natsConfig,
+      },
+    ]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
@@ -32,7 +41,7 @@ const mongoConnectionOptions = {
     }),
     MongooseModule.forFeatureAsync([ContactFeature]),
   ],
-  controllers: [DataStreamController],
+  controllers: [DataStreamController, ContactsController],
   providers: [DataStreamService, ContactService],
 })
 export class DataStreamModule {}

@@ -1,12 +1,11 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { natsConfig } from './config/nats.config';
 import { DataStreamModule } from './data-stream.module';
 
 const initMicroservice = async (app: INestApplication) => {
-  app.connectMicroservice({
-    // Setup communication protocol here
-  });
+  app.connectMicroservice(natsConfig);
   await app.startAllMicroservicesAsync();
 };
 

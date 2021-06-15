@@ -1,13 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { WorkerModule } from './worker.module';
-import { MicroserviceOptions } from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { natsConfig } from './config/nats.config';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     WorkerModule,
-    {
-      // Setup communication protocol here
-    },
+    natsConfig,
   );
   app.listen(async () => {
     console.log('Worker is listening');

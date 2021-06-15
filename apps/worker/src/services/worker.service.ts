@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { WorkerStatus } from '../commons/worker-status.enum';
 import { ContactSchedulerService } from './contact.scheduler.service';
 
 @Injectable()
@@ -12,9 +13,9 @@ export class WorkerService {
    *
    * @param fromDate filtering start date
    */
-  async startJob(fromDate: Date) {
+  async startJob(fromDate: Date): Promise<WorkerStatus> {
     Logger.debug(`Starting the scheduler.`);
-    await this.contactSchedulerService.startContactReaderJob(fromDate);
+    return await this.contactSchedulerService.startContactReaderJob(fromDate);
   }
 
   /**
