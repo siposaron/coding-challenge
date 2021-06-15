@@ -8,6 +8,7 @@ async function bootstrap() {
     WorkerModule,
     natsConfig,
   );
+
   app.listen(async () => {
     console.log('Worker is listening');
   });

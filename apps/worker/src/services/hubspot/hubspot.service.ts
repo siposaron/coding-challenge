@@ -1,9 +1,7 @@
 import { HttpService, Logger } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RpcException } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { HubspotContact } from '../../dto/hubspot/hubspot.contact.dto';
 
 const HUBSPOT_CONTACTS_SEARCH_URI =
@@ -16,10 +14,17 @@ const HUBSPOT_CONTACTS_SEARCH_URI =
 export class HubspotService {
   private readonly logger = new Logger(HubspotService.name);
 
+  private uri = '';
+
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.uri = HUBSPOT_CONTACTS_SEARCH_URI.concat(
+      '?hapikey=',
+      this.configService.get<string>('HUBSPOT_API_KEY'),
+    );
+  }
 
   /**
    * Retrieves the contacts from Hubspot
@@ -30,21 +35,15 @@ export class HubspotService {
   async getContacts(fromDate?: Date): Promise<HubspotContact[]> {
     try {
       const payload = this.getSearchPayload(fromDate);
-      const searchUri = HUBSPOT_CONTACTS_SEARCH_URI.concat(
-        '?hapikey=',
-        this.configService.get<string>('HUBSPOT_API_KEY'),
-      );
-      this.logger.debug(
-        `Fetch payload ${JSON.stringify(payload)} \ searchUri: ${searchUri}`,
-      );
+      this.logger.debug(`Fetch payload ${JSON.stringify(payload)}`);
 
       return await this.httpService
-        .post(searchUri, payload, {
+        .post(this.uri, payload, {
           headers: {
             'Content-Type': 'application/json',
           },
         })
-        .pipe(map((response) => response.data as HubspotContact[]))
+        .pipe(map((response) => response.data.results as HubspotContact[]))
         .toPromise();
     } catch (e) {
       this.logger.error(`Could not fetch data from hubspot. ${e.message}`);

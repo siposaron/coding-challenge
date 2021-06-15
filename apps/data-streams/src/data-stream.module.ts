@@ -5,6 +5,7 @@ import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
 import { natsConfig } from './config/nats.config';
 import { ContactsController } from './controllers/contacts.controller';
 import { DataStreamController } from './controllers/data-stream.controller';
+import { ImportContactsController } from './controllers/import-contacts.controller';
 import { ContactFeature } from './schemas/contact.schema';
 import { ContactService } from './services/contact.service';
 import { DataStreamService } from './services/data-stream.service';
@@ -41,7 +42,11 @@ const mongoConnectionOptions = {
     }),
     MongooseModule.forFeatureAsync([ContactFeature]),
   ],
-  controllers: [DataStreamController, ContactsController],
+  controllers: [
+    DataStreamController,
+    ContactsController,
+    ImportContactsController,
+  ],
   providers: [DataStreamService, ContactService],
 })
 export class DataStreamModule {}

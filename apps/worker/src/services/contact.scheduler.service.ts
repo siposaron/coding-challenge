@@ -7,6 +7,7 @@ import { HubspotContact } from '../dto/hubspot/hubspot.contact.dto';
 import { WorkerStatus } from '../commons/worker-status.enum';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { ProcessingStatus } from '../commons/processing-status.enum';
+import { map, tap } from 'rxjs/operators';
 
 /**
  * Scheduler responsible for starting and stopping jobs that fetch contacts from Hubspot.
@@ -42,10 +43,14 @@ export class ContactSchedulerService {
       }
 
       if (!this.schedulerRegistry.doesExists('cron', name)) {
-        const job = new CronJob(`* */${minutes} * * * *`, async () => {
+        // const job = new CronJob(`0 */${minutes} * * * *`, async () => {
+        const job = new CronJob(`*/30 * * * * *`, async () => {
           this.logger.warn(`Job ${name} runs each (${minutes}) minutes`);
           // fetch contacts from hubspot
           const contacts = await this.getContactsFromHubspot(this.fromDate);
+          this.logger.debug(
+            `Number of contacts to send to data streams ${contacts.length}`,
+          );
           // set the fromDate from last contact in list
           if (contacts && contacts.length > 0) {
             const lastContact = contacts[contacts.length - 1];
@@ -55,7 +60,7 @@ export class ContactSchedulerService {
           // TODO: extract to different service with retry mechanism
           const status = await this.client
             .send<ProcessingStatus, ContactDto[]>(
-              { cmd: 'processContacts' },
+              { cmd: 'importContacts' },
               contacts,
             )
             .toPromise();
@@ -66,8 +71,12 @@ export class ContactSchedulerService {
         this.logger.debug(`Job ${name} is started!`);
       } else {
         const job = this.schedulerRegistry.getCronJob(name);
-        job.setTime(new CronTime(`* */${minutes} * * * *`));
+        job.setTime(new CronTime(`0 */${minutes} * * * *`));
         this.logger.debug(`Job ${name} is updated to ${minutes} minutes!`);
+        if (!job.running) {
+          job.start();
+          this.logger.debug(`Job ${name} is started`);
+        }
       }
       return WorkerStatus.Started;
     } catch (e) {

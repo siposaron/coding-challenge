@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProcessingStatus } from '../commons/processing-status.enum';
@@ -41,13 +40,14 @@ export class ContactService {
     return contactDocuments.map((doc) => new Contact(doc));
   }
 
+  // TODO: rework this => should update existing contact or create new contact
   /**
    * Save contacts from Hubspot into own DB
    * @param contactDtos the received contacts
    * @returns ProcessingStatus
    */
-  @MessagePattern({ cmd: 'processContacts' })
-  async processContacts(contactDtos: ContactDto[]): Promise<ProcessingStatus> {
+  async importContacts(contactDtos: ContactDto[]): Promise<ProcessingStatus> {
+    this.logger.debug(`importContacts: ${JSON.stringify(contactDtos.length)}`);
     try {
       const bulkOperation =
         this.contactModel.collection.initializeUnorderedBulkOp();
@@ -56,13 +56,15 @@ export class ContactService {
           .find({ foreignId: contactDto.id })
           .upsert()
           .updateOne({
-            foreignId: contactDto.id,
-            firstName: contactDto.firstName,
-            lastName: contactDto.lastName,
-            email: contactDto.email,
-            foreignCreateDate: new Date(contactDto.createDate),
-            foreignModifyDate: new Date(contactDto.modifyDate),
-          } as Contact),
+            $set: {
+              foreignId: contactDto.id,
+              firstName: contactDto.firstName,
+              lastName: contactDto.lastName,
+              email: contactDto.email,
+              foreignCreateDate: new Date(contactDto.createDate),
+              foreignModifyDate: new Date(contactDto.modifyDate),
+            } as Contact,
+          }),
       );
       const result = await bulkOperation.execute();
       this.logger.debug(`Contact import results: ${JSON.stringify(result)}`);
