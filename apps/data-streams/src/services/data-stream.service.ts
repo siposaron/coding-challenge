@@ -15,7 +15,7 @@ export class DataStreamService {
   startJob(startJobDto: StartJobDto): Observable<WorkerStatus> {
     this.logger.debug(`Start the job. ${JSON.stringify(startJobDto)}`);
     return this.client.send<WorkerStatus, StartJobDto>(
-      { cmd: 'startWorkerJob' },
+      { cmd: 'start.worker' },
       startJobDto,
     );
   }
@@ -23,7 +23,7 @@ export class DataStreamService {
   stopJob(stopJobDto: StopJobDto): Observable<WorkerStatus> {
     this.logger.debug(`Stop the job. ${JSON.stringify(stopJobDto)}`);
     return this.client.send<WorkerStatus, StopJobDto>(
-      { cmd: 'stopWorkerJob' },
+      { cmd: 'stop.worker' },
       stopJobDto,
     );
   }

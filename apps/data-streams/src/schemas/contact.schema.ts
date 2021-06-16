@@ -1,14 +1,12 @@
+import { Transform } from 'class-transformer';
+import { Document } from 'mongoose';
+
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
-import { IsOptional } from 'class-validator';
-import { Document, SchemaTypes } from 'mongoose';
+
 import { DataSource } from '../commons/datasource.enum';
 import { BaseDocument } from './base/base-document';
-import {
-  valueToISODateString,
-  valueToString,
-} from './transformers/schema.transformer';
+import { valueToISODateString } from './transformers/schema.transformer';
 
 @Schema({ timestamps: true })
 export class Contact extends BaseDocument {
@@ -21,7 +19,7 @@ export class Contact extends BaseDocument {
     type: String,
     description: 'The contact id in the external system.',
   })
-  @Prop()
+  @Prop({ index: true })
   foreignId: string;
 
   @ApiProperty({

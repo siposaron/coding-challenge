@@ -8,6 +8,7 @@ export class WorkerService {
     private readonly contactSchedulerService: ContactSchedulerService,
   ) {}
 
+  // TODO: we could pass a Cron string
   /**
    * Starts the fetching job.
    *

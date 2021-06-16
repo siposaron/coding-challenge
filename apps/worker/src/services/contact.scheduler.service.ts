@@ -40,45 +40,52 @@ export class ContactSchedulerService {
       this.fromDate = fromDate ? fromDate : null;
 
       if (!this.schedulerRegistry.doesExists('cron', name)) {
-        // const job = new CronJob(`0 */${minutes} * * * *`, async () => {
-        const job = new CronJob(`*/30 * * * * *`, async () => {
-          this.logger.warn(`Job ${name} runs each (${minutes}) minutes`);
-          // fetch contacts from hubspot
-          const contacts = await this.getContactsFromHubspot(this.fromDate);
-          this.logger.debug(
-            `Number of contacts to send to data streams ${contacts.length}`,
-          );
-          // set the fromDate from last contact in list
-          if (contacts && contacts.length > 0) {
-            const lastContact = contacts[contacts.length - 1];
-            this.fromDate = new Date(lastContact.modifyDate);
-          }
-          // send to data-streams service
-          // TODO: extract to different service with retry mechanism
-          const status = await this.client
-            .send<ProcessingStatus, ContactDto[]>(
-              { cmd: 'importContacts' },
-              contacts,
-            )
-            .toPromise();
-          this.logger.debug(`Status of sending contacts ${status}`);
-        });
+        const job = this.createCronJob(minutes, name);
         this.schedulerRegistry.addCronJob(name, job);
         job.start();
         this.logger.debug(`Job ${name} is started!`);
       } else {
-        const job = this.schedulerRegistry.getCronJob(name);
-        job.setTime(new CronTime(`0 */${minutes} * * * *`));
-        this.logger.debug(`Job ${name} is updated to ${minutes} minutes!`);
-        if (!job.running) {
-          job.start();
-          this.logger.debug(`Job ${name} is started`);
-        }
+        this.updateCronJob(name, minutes);
       }
       return WorkerStatus.Started;
     } catch (e) {
       this.logger.error(`Job could not be started. ${e.message}`);
       throw new RpcException('Job could not be started.');
+    }
+  }
+
+  private createCronJob(minutes: number, name: string) {
+    return new CronJob(`0 */${minutes} * * * *`, async () => {
+      this.logger.warn(`Job ${name} runs each (${minutes}) minutes`);
+      // fetch contacts from hubspot
+      const contacts = await this.getContactsFromHubspot(this.fromDate);
+      this.logger.debug(
+        `Number of contacts to send to data streams ${contacts.length}`,
+      );
+      // set the fromDate from last contact in list
+      if (contacts && contacts.length > 0) {
+        const lastContact = contacts[contacts.length - 1];
+        this.fromDate = new Date(lastContact.modifyDate);
+      }
+      // send to data-streams service
+      // TODO: extract to different service with retry mechanism
+      const status = await this.client
+        .send<ProcessingStatus, ContactDto[]>(
+          { cmd: 'import.contacts' },
+          contacts,
+        )
+        .toPromise();
+      this.logger.debug(`Status of sending contacts ${status}`);
+    });
+  }
+
+  private updateCronJob(name: string, minutes: number) {
+    const job = this.schedulerRegistry.getCronJob(name);
+    job.setTime(new CronTime(`0 */${minutes} * * * *`));
+    this.logger.debug(`Job ${name} is updated to ${minutes} minutes!`);
+    if (!job.running) {
+      job.start();
+      this.logger.debug(`Job ${name} is started`);
     }
   }
 

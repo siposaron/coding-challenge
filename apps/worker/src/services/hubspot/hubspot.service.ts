@@ -64,7 +64,7 @@ export class HubspotService {
           direction: 'ASCENDING',
         },
       ],
-      limit: 100,
+      limit: 25,
     };
 
     return fromDate

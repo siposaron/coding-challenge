@@ -15,7 +15,7 @@ export class ImportContactsController {
 
   constructor(private readonly contactService: ContactService) {}
 
-  @MessagePattern({ cmd: 'importContacts' })
+  @MessagePattern({ cmd: 'import.contacts' })
   async importContactsFromWorker(
     @Payload() contactDtos: ContactDto[],
     @Ctx() context: NatsContext,

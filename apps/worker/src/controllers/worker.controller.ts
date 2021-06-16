@@ -21,7 +21,7 @@ export class WorkerController {
     private readonly workerService: WorkerService,
   ) {}
 
-  @MessagePattern({ cmd: 'startWorkerJob' })
+  @MessagePattern({ cmd: 'start.worker' })
   async startWorkerJob(startJobDto: StartJobDto): Promise<WorkerStatus> {
     this.logger.debug(
       `Starting the workerJob. Received message: ${JSON.stringify(
@@ -34,7 +34,7 @@ export class WorkerController {
     return await this.workerService.startJob(fromDate);
   }
 
-  @MessagePattern({ cmd: 'stopWorkerJob' })
+  @MessagePattern({ cmd: 'stop.worker' })
   async stopWorkerJob(startJobDto: StopJobDto): Promise<WorkerStatus> {
     this.logger.debug(
       `Stopping the workerJob. Received message: ${JSON.stringify(

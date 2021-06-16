@@ -71,9 +71,10 @@ export class ContactService {
     } as ImportMetrics;
 
     if (contactDtos && contactDtos.length > 0) {
+      // TODO: should be some batch insert & update
       for (const contactDto of contactDtos) {
         try {
-          await this.contactModel
+          const contact = await this.contactModel
             .findOneAndUpdate(
               { foreignId: contactDto.id },
               {
@@ -88,7 +89,14 @@ export class ContactService {
             )
             .exec();
 
-          importMetrics.successfulImports++;
+          if (contact) {
+            importMetrics.successfulImports++;
+          } else {
+            importMetrics.failedImports++;
+            importMetrics.failedForeignIds.push(contactDto.id);
+          }
+          // db connection
+          await this.timeout(250);
         } catch (e) {
           importMetrics.failedImports++;
           importMetrics.failedForeignIds.push(contactDto.id);
@@ -104,5 +112,9 @@ export class ContactService {
     return importMetrics.failedImports > 0
       ? ProcessingStatus.NOk
       : ProcessingStatus.Ok;
+  }
+
+  private timeout(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

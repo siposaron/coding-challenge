@@ -1,15 +1,9 @@
-import { StartJobDto } from '../dto/start-job.dto';
-import { StopJobDto } from '../dto/stop-job.dto';
+import { WorkerEvent } from '../schemas/worker-event.schema';
 
 export enum WorkerEvents {
-  WorkerStarted = 'worker.started',
-  WorkerStopped = 'worker.stopped',
+  ChangeWorkerState = 'change.worker.state',
 }
 
-export class WorkerStartedEvent {
-  stratJob: StartJobDto;
-}
-
-export class WorkerStoppedEvent {
-  stopJob: StopJobDto;
+export class ChangeWorkerStateEvent {
+  workerEvent: WorkerEvent;
 }

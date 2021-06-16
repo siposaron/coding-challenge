@@ -3,22 +3,26 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ClientsModule } from '@nestjs/microservices';
 import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
+
 import { natsConfig } from './config/nats.config';
 import { ContactsController } from './controllers/contacts.controller';
 import { DataStreamController } from './controllers/data-stream.controller';
 import { ImportContactsController } from './controllers/import-contacts.controller';
 import { ImportEventListener } from './listeners/import-event.listener';
+import { WorkerEventListener } from './listeners/worker-event.listener';
 import { ContactFeature } from './schemas/contact.schema';
 import { ImportMetricsFeature } from './schemas/import-metrics.schema';
+import { WorkerEventFeature } from './schemas/worker-event.schema';
 import { ContactService } from './services/contact.service';
 import { DataStreamService } from './services/data-stream.service';
 import { ImportMetricsService } from './services/import-metrics.service';
+import { WorkerEventService } from './services/worker-event.service';
 
 const mongoConnectionOptions = {
   useNewUrlParser: true,
   useCreateIndex: true,
   keepAlive: true,
-  poolSize: 10,
+  poolSize: 35,
   bufferMaxEntries: 0,
   connectTimeoutMS: 10000,
   socketTimeoutMS: 30000,
@@ -44,7 +48,11 @@ const mongoConnectionOptions = {
       }),
       inject: [ConfigService],
     }),
-    MongooseModule.forFeatureAsync([ContactFeature, ImportMetricsFeature]),
+    MongooseModule.forFeatureAsync([
+      ContactFeature,
+      ImportMetricsFeature,
+      WorkerEventFeature,
+    ]),
     EventEmitterModule.forRoot(),
   ],
   controllers: [
@@ -56,7 +64,9 @@ const mongoConnectionOptions = {
     DataStreamService,
     ContactService,
     ImportMetricsService,
+    WorkerEventService,
     ImportEventListener,
+    WorkerEventListener,
   ],
 })
 export class DataStreamModule {}
