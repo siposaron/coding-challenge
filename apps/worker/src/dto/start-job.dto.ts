@@ -5,7 +5,8 @@ export class StartJobDto {
   constructor(startJobDto: Partial<StartJobDto> = {}) {
     Object.assign(this, startJobDto);
   }
-  fromDate: Date;
+  // TODO: validate for UTC date string
+  fromDate: string;
   objectType: ObjectType;
   dataSource: DataSource;
 }

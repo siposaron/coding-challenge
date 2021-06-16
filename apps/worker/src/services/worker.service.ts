@@ -21,8 +21,8 @@ export class WorkerService {
   /**
    * Stops the fetching job.
    */
-  async stopJob() {
+  async stopJob(): Promise<WorkerStatus> {
     Logger.debug(`Stopping the scheduler.`);
-    await this.contactSchedulerService.stopContactReaderJob();
+    return await this.contactSchedulerService.stopContactReaderJob();
   }
 }

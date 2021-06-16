@@ -5,7 +5,17 @@
   "root": "apps/data-streams",
   "compilerOptions": {
     "webpack": true,
-    "tsConfigPath": "apps/data-streams/tsconfig.app.json"
+    "tsConfigPath": "apps/data-streams/tsconfig.app.json",
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "dtoFileNameSuffix": [".dto.ts", "schema.ts"],
+          "classValidatorShim": true,
+          "introspectComments": false
+        }
+      }
+    ]
   },
   "projects": {
     "data-streams": {

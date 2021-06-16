@@ -37,7 +37,7 @@ export class ContactService {
       .skip(offset * limit)
       .exec();
 
-    return contactDocuments.map((doc) => new Contact(doc));
+    return contactDocuments.map((doc) => new Contact(doc.toJSON()));
   }
 
   // TODO: rework this => should update existing contact or create new contact
@@ -49,25 +49,27 @@ export class ContactService {
   async importContacts(contactDtos: ContactDto[]): Promise<ProcessingStatus> {
     this.logger.debug(`importContacts: ${JSON.stringify(contactDtos.length)}`);
     try {
-      const bulkOperation =
-        this.contactModel.collection.initializeUnorderedBulkOp();
-      contactDtos.forEach((contactDto) =>
-        bulkOperation
-          .find({ foreignId: contactDto.id })
-          .upsert()
-          .updateOne({
-            $set: {
-              foreignId: contactDto.id,
-              firstName: contactDto.firstName,
-              lastName: contactDto.lastName,
-              email: contactDto.email,
-              foreignCreateDate: new Date(contactDto.createDate),
-              foreignModifyDate: new Date(contactDto.modifyDate),
-            } as Contact,
-          }),
-      );
-      const result = await bulkOperation.execute();
-      this.logger.debug(`Contact import results: ${JSON.stringify(result)}`);
+      if (contactDtos && contactDtos.length > 0) {
+        const bulkOperation =
+          this.contactModel.collection.initializeUnorderedBulkOp();
+        contactDtos.forEach((contactDto) =>
+          bulkOperation
+            .find({ foreignId: contactDto.id })
+            .upsert()
+            .updateOne({
+              $set: {
+                foreignId: contactDto.id,
+                firstName: contactDto.firstName,
+                lastName: contactDto.lastName,
+                email: contactDto.email,
+                foreignCreateDate: new Date(contactDto.createDate),
+                foreignModifyDate: new Date(contactDto.modifyDate),
+              } as Contact,
+            }),
+        );
+        const result = await bulkOperation.execute();
+        this.logger.debug(`Contact import results: ${JSON.stringify(result)}`);
+      }
       return ProcessingStatus.Ok;
     } catch (e) {
       this.logger.error(`Contact import failed ${e.message}`);

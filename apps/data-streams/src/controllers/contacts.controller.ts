@@ -37,7 +37,8 @@ export class ContactsController {
   }
 
   @ApiOkResponse({
-    type: ContactCountDto,
+    type: Contact,
+    isArray: true,
     description: 'Returns the list of contacts.',
   })
   @ApiBadRequestResponse({

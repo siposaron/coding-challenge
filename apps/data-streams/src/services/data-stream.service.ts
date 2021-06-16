@@ -12,22 +12,19 @@ export class DataStreamService {
 
   constructor(@Inject('WORKER_SERVICE') private readonly client: ClientProxy) {}
 
-  updateWorker(startJobDto: StartJobDto): Observable<WorkerStatus> {
+  startJob(startJobDto: StartJobDto): Observable<WorkerStatus> {
+    this.logger.debug(`Start the job. ${JSON.stringify(startJobDto)}`);
     return this.client.send<WorkerStatus, StartJobDto>(
       { cmd: 'startWorkerJob' },
       startJobDto,
     );
   }
 
-  async startJob(startJobDto: StartJobDto): Promise<boolean> {
-    this.logger.debug(`Start the job. ${JSON.stringify(startJobDto)}`);
-    // TODO: start the remote worker job
-    return true;
-  }
-
-  async stopJob(stopJobDto: StopJobDto): Promise<boolean> {
+  stopJob(stopJobDto: StopJobDto): Observable<WorkerStatus> {
     this.logger.debug(`Stop the job. ${JSON.stringify(stopJobDto)}`);
-    // TODO: stop the remote worker job
-    return true;
+    return this.client.send<WorkerStatus, StopJobDto>(
+      { cmd: 'stopWorkerJob' },
+      stopJobDto,
+    );
   }
 }

@@ -41,7 +41,7 @@ export class DataStreamController {
     startJobDto: StartJobDto,
   ): Observable<WorkerStatus> {
     return this.dataStreamService
-      .updateWorker(startJobDto)
+      .startJob(startJobDto)
       .pipe(
         tap((jobStatus) => this.logger.debug(`Worker status: ${jobStatus}`)),
       );
@@ -57,10 +57,14 @@ export class DataStreamController {
     description: 'Internal service error. Check the logs for more info.',
   })
   @Post('/stop')
-  async stopJob(
+  stopJob(
     @Body()
     stopJobDto: StopJobDto,
-  ) {
-    return await this.dataStreamService.stopJob(stopJobDto);
+  ): Observable<WorkerStatus> {
+    return this.dataStreamService
+      .stopJob(stopJobDto)
+      .pipe(
+        tap((jobStatus) => this.logger.debug(`Worker status: ${jobStatus}`)),
+      );
   }
 }

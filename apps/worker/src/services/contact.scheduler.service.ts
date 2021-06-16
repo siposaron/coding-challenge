@@ -7,7 +7,6 @@ import { HubspotContact } from '../dto/hubspot/hubspot.contact.dto';
 import { WorkerStatus } from '../commons/worker-status.enum';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { ProcessingStatus } from '../commons/processing-status.enum';
-import { map, tap } from 'rxjs/operators';
 
 /**
  * Scheduler responsible for starting and stopping jobs that fetch contacts from Hubspot.
@@ -89,12 +88,16 @@ export class ContactSchedulerService {
    * Stops the contact reader job
    * @param name the name of the job, defaults to `CONTACTS_CRON_JOB`
    */
-  stopContactReaderJob(name = this.contactsCronJob) {
-    const job = this.schedulerRegistry.getCronJob(name);
-    if (job) {
+  async stopContactReaderJob(
+    name = this.contactsCronJob,
+  ): Promise<WorkerStatus> {
+    this.logger.debug(`Stopping job ${name}.`);
+    if (this.schedulerRegistry.doesExists('cron', name)) {
+      const job = this.schedulerRegistry.getCronJob(name);
       job.stop();
       this.logger.debug(`Job ${name} is stopped.`);
     }
+    return WorkerStatus.Stopped;
   }
 
   /**
@@ -105,7 +108,7 @@ export class ContactSchedulerService {
    */
   private async getContactsFromHubspot(fromDate: Date): Promise<ContactDto[]> {
     this.logger.debug(
-      `Fetching contacts from HubSpot started. From createdate: ${fromDate}`,
+      `Fetching contacts from HubSpot started. From lastmodifieddate: ${fromDate}`,
     );
 
     const hubspotContacts: HubspotContact[] =
