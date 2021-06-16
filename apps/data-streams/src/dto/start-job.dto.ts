@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import { IsDate, IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsNumberString, IsOptional } from 'class-validator';
 import { DataSource } from '../commons/datasource.enum';
 import { ObjectType } from '../commons/object-type.enum';
 
@@ -9,12 +8,10 @@ export class StartJobDto {
     Object.assign(this, startJobDto);
   }
 
-  @ApiPropertyOptional({ type: Date, example: '2021-07-07T10:00:00.000Z' })
+  @ApiPropertyOptional({ type: String, example: '1212' })
   @IsOptional()
-  @Type(() => Date)
-  @Transform((obj) => (obj?.value ? new Date(Date.parse(obj?.value)) : null))
-  @IsDate()
-  fromDate: Date;
+  @IsNumberString()
+  fromId: string;
 
   @ApiProperty({
     type: ObjectType,

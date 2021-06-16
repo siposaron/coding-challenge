@@ -28,10 +28,7 @@ export class WorkerController {
         startJobDto,
       )}`,
     );
-    const fromDate = startJobDto.fromDate
-      ? new Date(Date.parse(startJobDto.fromDate))
-      : null;
-    return await this.workerService.startJob(fromDate);
+    return await this.workerService.startJob(startJobDto.fromId);
   }
 
   @MessagePattern({ cmd: 'stop.worker' })

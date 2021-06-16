@@ -12,11 +12,11 @@ export class WorkerService {
   /**
    * Starts the fetching job.
    *
-   * @param fromDate filtering start date
+   * @param fromId filtering start id
    */
-  async startJob(fromDate: Date): Promise<WorkerStatus> {
+  async startJob(fromId: string): Promise<WorkerStatus> {
     Logger.debug(`Starting the scheduler.`);
-    return await this.contactSchedulerService.startContactReaderJob(fromDate);
+    return await this.contactSchedulerService.startContactReaderJob(fromId);
   }
 
   /**

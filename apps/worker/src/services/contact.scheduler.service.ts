@@ -22,22 +22,22 @@ export class ContactSchedulerService {
   private readonly logger = new Logger(ContactSchedulerService.name);
   private readonly contactsCronJob = 'CONTACTS_CRON_JOB';
 
-  private fromDate: Date;
+  private fromId: string;
 
   /**
    * Starts the contact reader job.
    *
-   * @param fromDate the `lastmodifieddate` of contacts fetching is starting from
+   * @param fromId the `hs_object_id` of contacts fetching is starting from
    * @param name optional job name, defaults to `CONTACTS_CRON_JOB`
    * @param minutes optional scheduler minutes, defaults to `5`
    */
   async startContactReaderJob(
-    fromDate?: Date,
+    fromId?: string,
     name = this.contactsCronJob,
-    minutes = 1,
+    minutes = 5, // TODO: change to 5, could set from env var
   ): Promise<WorkerStatus> {
     try {
-      this.fromDate = fromDate ? fromDate : null;
+      this.fromId = fromId ? fromId : null;
 
       if (!this.schedulerRegistry.doesExists('cron', name)) {
         const job = this.createCronJob(minutes, name);
@@ -58,24 +58,25 @@ export class ContactSchedulerService {
     return new CronJob(`0 */${minutes} * * * *`, async () => {
       this.logger.warn(`Job ${name} runs each (${minutes}) minutes`);
       // fetch contacts from hubspot
-      const contacts = await this.getContactsFromHubspot(this.fromDate);
+      const contacts = await this.getContactsFromHubspot(this.fromId);
       this.logger.debug(
         `Number of contacts to send to data streams ${contacts.length}`,
       );
-      // set the fromDate from last contact in list
+
+      // set the fromId from last contact in list
       if (contacts && contacts.length > 0) {
         const lastContact = contacts[contacts.length - 1];
-        this.fromDate = new Date(lastContact.modifyDate);
+        this.fromId = lastContact.id;
+
+        // send to data-streams service
+        const status = await this.client
+          .send<ProcessingStatus, ContactDto[]>(
+            { cmd: 'import.contacts' },
+            contacts,
+          )
+          .toPromise();
+        this.logger.debug(`Status of sending contacts ${status}`);
       }
-      // send to data-streams service
-      // TODO: extract to different service with retry mechanism
-      const status = await this.client
-        .send<ProcessingStatus, ContactDto[]>(
-          { cmd: 'import.contacts' },
-          contacts,
-        )
-        .toPromise();
-      this.logger.debug(`Status of sending contacts ${status}`);
     });
   }
 
@@ -111,13 +112,11 @@ export class ContactSchedulerService {
    * @param fromDate filtering start date
    * @returns list of {@link Contact}
    */
-  private async getContactsFromHubspot(fromDate: Date): Promise<ContactDto[]> {
-    this.logger.debug(
-      `Fetching contacts from HubSpot started. From lastmodifieddate: ${fromDate}`,
-    );
+  private async getContactsFromHubspot(id?: string): Promise<ContactDto[]> {
+    this.logger.debug(`Fetching contacts from HubSpot started. From id: ${id}`);
 
     const hubspotContacts: HubspotContact[] =
-      await this.hubspotService.getContacts(fromDate);
+      await this.hubspotService.getContacts(id);
 
     this.logger.debug(
       `Fetched ${hubspotContacts.length} contacts from HubSpot.`,

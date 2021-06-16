@@ -95,8 +95,6 @@ export class ContactService {
             importMetrics.failedImports++;
             importMetrics.failedForeignIds.push(contactDto.id);
           }
-          // db connection
-          await this.timeout(250);
         } catch (e) {
           importMetrics.failedImports++;
           importMetrics.failedForeignIds.push(contactDto.id);
@@ -112,9 +110,5 @@ export class ContactService {
     return importMetrics.failedImports > 0
       ? ProcessingStatus.NOk
       : ProcessingStatus.Ok;
-  }
-
-  private timeout(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

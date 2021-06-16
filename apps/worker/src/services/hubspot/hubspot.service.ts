@@ -29,12 +29,12 @@ export class HubspotService {
   /**
    * Retrieves the contacts from Hubspot
    *
-   * @param fromDate optional date for setting the lastmodifieddate contacts are retrieved starting from
+   * @param id optional id for setting the hs_object_id contacts are retrieved starting from
    * @returns HubspotContact list
    */
-  async getContacts(fromDate?: Date): Promise<HubspotContact[]> {
+  async getContacts(id?: string): Promise<HubspotContact[]> {
     try {
-      const payload = this.getSearchPayload(fromDate);
+      const payload = this.getSearchPayload(id);
       this.logger.debug(`Fetch payload ${JSON.stringify(payload)}`);
 
       return await this.httpService
@@ -51,31 +51,31 @@ export class HubspotService {
   }
 
   /**
-   * Filter payload, orders the contacts by lastmodifieddate ASC.
+   * Filter payload, orders the contacts by hs_object_id ASC.
    *
-   * @param fromDate is the starting lastmodifieddate contacts are retrieved from
+   * @param id is the starting hs_object_id contacts are retrieved from
    * @returns payload
    */
-  getSearchPayload(fromDate: Date) {
+  getSearchPayload(id: string) {
     const data = {
       sorts: [
         {
-          propertyName: 'lastmodifieddate',
+          propertyName: 'hs_object_id',
           direction: 'ASCENDING',
         },
       ],
-      limit: 25,
+      limit: 100,
     };
 
-    return fromDate
+    return id
       ? {
           ...data,
           ...{
             filters: [
               {
-                propertyName: 'lastmodifieddate',
-                operator: 'GTE',
-                value: fromDate.getTime(),
+                propertyName: 'hs_object_id',
+                operator: 'GT',
+                value: id,
               },
             ],
           },
