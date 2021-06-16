@@ -27,41 +27,6 @@ services:
     labels:
       <<: *local
 
-  data-streams:
-    <<: *common
-    build:
-      context: .
-      dockerfile: 'docker/DataStreams.Dockerfile'
-    expose:
-      - '3000'
-    ports:
-      - '3000:3000'
-    environment:
-      MONGO_URI: mongodb://mongo:27017/wchallenge
-      NATS_URL: nats://nats:4222
-    depends_on:
-      - nats
-      - mongo
-    networks:
-      - wchallenge
-    labels:
-      <<: *local
-
-  worker:
-    <<: *common
-    build:
-      context: .
-      dockerfile: 'docker/Worker.Dockerfile'
-    environment:
-      HUBSPOT_API_KEY: ${HUBSPOT_API_KEY}
-      NATS_URL: nats://nats:4222
-    depends_on:
-      - nats
-    networks:
-      - wchallenge
-    labels:
-      <<: *local
-
   nats:
     <<: *common
     image: nats

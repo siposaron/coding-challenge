@@ -37,9 +37,7 @@ export class ContactSchedulerService {
     minutes = 1,
   ): Promise<WorkerStatus> {
     try {
-      if (fromDate) {
-        this.fromDate = fromDate;
-      }
+      this.fromDate = fromDate ? fromDate : null;
 
       if (!this.schedulerRegistry.doesExists('cron', name)) {
         // const job = new CronJob(`0 */${minutes} * * * *`, async () => {

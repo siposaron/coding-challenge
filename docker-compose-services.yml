@@ -14,19 +14,6 @@ version: '3.8'
 
 # Services
 services:
-  mongo:
-    <<: *common
-    image: 'mongo:latest'
-    ports:
-      - '27018:27017'
-    volumes:
-      - mongo-data:/data/db
-      - mongo-config:/data/configdb
-    networks:
-      - wchallenge
-    labels:
-      <<: *local
-
   data-streams:
     <<: *common
     build:
@@ -39,9 +26,6 @@ services:
     environment:
       MONGO_URI: mongodb://mongo:27017/wchallenge
       NATS_URL: nats://nats:4222
-    depends_on:
-      - nats
-      - mongo
     networks:
       - wchallenge
     labels:
@@ -59,27 +43,6 @@ services:
       - nats
     networks:
       - wchallenge
-    labels:
-      <<: *local
-
-  nats:
-    <<: *common
-    image: nats
-    ports:
-      - '8222:8222'
-      - '4222:4222'
-      - '6222:6222'
-    networks:
-      - wchallenge
-
-# Volumes
-volumes:
-  mongo-data:
-    driver: local
-    labels:
-      <<: *local
-  mongo-config:
-    driver: local
     labels:
       <<: *local
 

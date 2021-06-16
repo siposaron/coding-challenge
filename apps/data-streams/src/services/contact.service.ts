@@ -1,18 +1,31 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ProcessingStatus } from '../commons/processing-status.enum';
 import { ContactCountDto } from '../dto/contact-count.dto';
 import { ContactDto } from '../dto/contact.dto';
+import {
+  ContactImportFinishedEvent,
+  ImportEvents,
+} from '../events/import.events';
 import { Contact, ContactDocument } from '../schemas/contact.schema';
+import { ImportMetrics } from '../schemas/import-metrics.schema';
 
 @Injectable()
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
+  private readonly upsertOptions = {
+    upsert: true,
+    new: true,
+    setDefaultsOnInsert: true,
+  };
+
   constructor(
     @InjectModel(Contact.name)
     private readonly contactModel: Model<ContactDocument>,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -40,24 +53,30 @@ export class ContactService {
     return contactDocuments.map((doc) => new Contact(doc.toJSON()));
   }
 
-  // TODO: rework this => should update existing contact or create new contact
   /**
    * Save contacts from Hubspot into own DB
    * @param contactDtos the received contacts
    * @returns ProcessingStatus
    */
   async importContacts(contactDtos: ContactDto[]): Promise<ProcessingStatus> {
-    this.logger.debug(`importContacts: ${JSON.stringify(contactDtos.length)}`);
-    try {
-      if (contactDtos && contactDtos.length > 0) {
-        const bulkOperation =
-          this.contactModel.collection.initializeUnorderedBulkOp();
-        contactDtos.forEach((contactDto) =>
-          bulkOperation
-            .find({ foreignId: contactDto.id })
-            .upsert()
-            .updateOne({
-              $set: {
+    this.logger.debug(
+      `Importing ${JSON.stringify(contactDtos.length)} contacts.`,
+    );
+
+    const importMetrics = {
+      successfulImports: 0,
+      failedImports: 0,
+      failedForeignIds: [],
+      createdAt: new Date(),
+    } as ImportMetrics;
+
+    if (contactDtos && contactDtos.length > 0) {
+      for (const contactDto of contactDtos) {
+        try {
+          await this.contactModel
+            .findOneAndUpdate(
+              { foreignId: contactDto.id },
+              {
                 foreignId: contactDto.id,
                 firstName: contactDto.firstName,
                 lastName: contactDto.lastName,
@@ -65,15 +84,25 @@ export class ContactService {
                 foreignCreateDate: new Date(contactDto.createDate),
                 foreignModifyDate: new Date(contactDto.modifyDate),
               } as Contact,
-            }),
-        );
-        const result = await bulkOperation.execute();
-        this.logger.debug(`Contact import results: ${JSON.stringify(result)}`);
+              this.upsertOptions,
+            )
+            .exec();
+
+          importMetrics.successfulImports++;
+        } catch (e) {
+          importMetrics.failedImports++;
+          importMetrics.failedForeignIds.push(contactDto.id);
+        }
       }
-      return ProcessingStatus.Ok;
-    } catch (e) {
-      this.logger.error(`Contact import failed ${e.message}`);
-      return ProcessingStatus.NOk;
     }
+
+    // raise event to save importMetrics
+    this.eventEmitter.emitAsync(ImportEvents.ContactImportFinished, {
+      importMetrics,
+    } as ContactImportFinishedEvent);
+
+    return importMetrics.failedImports > 0
+      ? ProcessingStatus.NOk
+      : ProcessingStatus.Ok;
   }
 }

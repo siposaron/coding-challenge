@@ -1,33 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 import { Document, SchemaTypes } from 'mongoose';
 import { DataSource } from '../commons/datasource.enum';
+import { BaseDocument } from './base/base-document';
 import {
   valueToISODateString,
   valueToString,
 } from './transformers/schema.transformer';
 
 @Schema({ timestamps: true })
-export class Contact {
+export class Contact extends BaseDocument {
   constructor(partial: Partial<Contact> = {}) {
+    super();
     Object.assign(this, partial);
   }
-
-  @ApiProperty({ type: String, name: 'id', description: 'The document id.' })
-  @Expose({ name: 'id' })
-  @Transform(valueToString)
-  @Prop({ type: SchemaTypes.ObjectId })
-  _id: string;
-
-  @ApiProperty({
-    type: Number,
-    name: 'version',
-    description: 'The document version',
-  })
-  @Expose({ name: 'version' })
-  @Prop()
-  __v: number;
 
   @ApiProperty({
     type: String,
