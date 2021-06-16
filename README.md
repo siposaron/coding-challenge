@@ -65,7 +65,24 @@ yarn start worker
 
 ## Config
 
-| Env variable    | Description            | Required |
-| --------------- | ---------------------- | -------- |
-| HUBSPOT_API_KEY | The Hubspot API key    | true     |
-| MONGO_URI       | MongoDB connection URI | true     |
+| Env variable    | Description         | Required |
+| --------------- | ------------------- | -------- |
+| HUBSPOT_API_KEY | The Hubspot API key | true     |
+
+## Local start
+
+Create a `.env` file in the project root with your hubspot api key. This is needed by docker-compose.
+
+```
+HUBSPOT_API_KEY={{CHANGE_ME}}
+```
+
+Issue `npm install`
+
+Generate test data, XLSX files by issuing `npm run gen`, then import the Contacts.xlsx into HubSpot. Not mandatory if you already have data in your CRM.
+
+Issue `docker-compose up --build` to start the app cluster.
+
+Open the [localhost](http://localhost:3000/api-doc) in your browser.
+
+You can start / stop the worker by simply clicking the Execute button on the `/api/streams/start`, `/api/streams/stop` endpoints.
