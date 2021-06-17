@@ -71,7 +71,7 @@ export class ContactService {
     } as ImportMetrics;
 
     if (contactDtos && contactDtos.length > 0) {
-      // TODO: should be some batch insert & update
+      // TODO: could be some batch insert & update, but what about import metrics then?
       for (const contactDto of contactDtos) {
         try {
           const contact = await this.contactModel

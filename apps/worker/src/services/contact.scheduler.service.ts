@@ -34,7 +34,7 @@ export class ContactSchedulerService {
   async startContactReaderJob(
     fromId?: string,
     name = this.contactsCronJob,
-    minutes = 5, // TODO: change to 5, could set from env var
+    minutes = 5,
   ): Promise<WorkerStatus> {
     try {
       this.fromId = fromId ? fromId : null;

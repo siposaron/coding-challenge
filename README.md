@@ -86,3 +86,11 @@ Issue `docker-compose up --build` to start the app cluster.
 Open the [localhost](http://localhost:3000/api-doc) in your browser.
 
 You can start / stop the worker by simply clicking the Execute button on the `/api/streams/start`, `/api/streams/stop` endpoints.
+
+## Messaging
+
+| Subject         | Sender       | Consumer     | Payload type | Scope                                                   |
+| --------------- | ------------ | ------------ | ------------ | ------------------------------------------------------- |
+| start.worker    | data-streams | worker       | StartJobDto  | Starts the worker's scheduled job                       |
+| stop.worker     | data-streams | worker       | StopJobDto   | Stop the worker's scheduled job                         |
+| import.contacts | worker       | data-streams | ContactDto[] | Pushes the read contacts from HubSpot for storing in DB |
